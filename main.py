@@ -1,6 +1,9 @@
 from flask import Flask, request, render_template, jsonify
 import requests
 import logging
+from pytrends.request import TrendReq
+import time
+from collections import Counter
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -95,6 +98,25 @@ def perform_google_request_cookies():
         return render_template('cookies.html', cookies=cookies)
     except requests.exceptions.RequestException as e:
         return f"Error making Google Analytics Cookies request: {str(e)}"
+
+@app.route('/chart_data')
+def chart_data():
+    pytrends = TrendReq(hl='en-US', tz=360)
+    keywords = ["Fortnite", "League of Legends"]
+    pytrends.build_payload(keywords, timeframe='today 12-m', geo='US')
+    interest_over_time_df = pytrends.interest_over_time()
+
+    data = {
+        'dates': interest_over_time_df.index.strftime('%Y-%m-%d').tolist(),
+        'Fortnite': interest_over_time_df['Fortnite'].tolist(),
+        'LeagueOfLegends': interest_over_time_df['League of Legends'].tolist()
+    }
+
+    return jsonify(data)
+
+@app.route('/chart_data_render')
+def index():
+    return render_template('chart_trend_data.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
