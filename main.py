@@ -2,8 +2,6 @@ from flask import Flask, request, render_template, jsonify
 import requests
 import logging
 from pytrends.request import TrendReq
-import time
-from collections import Counter
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
